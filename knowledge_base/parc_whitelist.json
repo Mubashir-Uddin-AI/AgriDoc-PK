@@ -1,0 +1,220 @@
+{
+  "meta": {
+    "version": "1.0.0",
+    "source": "Pakistan Agricultural Research Council (PARC) & Federal Department of Plant Protection (DPP)",
+    "last_updated": "2026-09-05",
+    "description": "Deterministic chemical whitelist for post-generation LLM guardrail validation. Every chemical recommendation MUST exist in this registry with dosage within max_dose_per_acre."
+  },
+  "diseases": {
+    "wheat_leaf_rust": {
+      "disease_name": "Wheat Leaf Rust (Brown Rust)",
+      "disease_name_ur": "گندم: پتوں کی بھوری زنگاری",
+      "pathogen": "Puccinia triticina",
+      "approved_chemicals": [
+        {
+          "product_name": "Nativo 75 WG",
+          "active_ingredient": "Tebuconazole 50% + Trifloxystrobin 25%",
+          "formulation": "WG (Water Dispersible Granule)",
+          "max_dose_per_acre": 65,
+          "dose_unit": "grams",
+          "dilution": "per 100 liters water",
+          "dose_display_ur": "65 گرام فی 100 لیٹر پانی فی ایکڑ",
+          "spray_timing_ur": "صبح سویرے شبنم خشک ہونے پر اسپرے کریں",
+          "pre_harvest_interval_days": 21,
+          "safety_class": "III (Slightly Hazardous)"
+        },
+        {
+          "product_name": "Amistar Top 325 SC",
+          "active_ingredient": "Azoxystrobin 20% + Difenoconazole 12.5%",
+          "formulation": "SC (Suspension Concentrate)",
+          "max_dose_per_acre": 200,
+          "dose_unit": "ml",
+          "dilution": "per 100 liters water",
+          "dose_display_ur": "200 ملی لیٹر فی 100 لیٹر پانی فی ایکڑ",
+          "spray_timing_ur": "بیماری کی ابتدائی علامات ظاہر ہونے پر فوراً اسپرے کریں",
+          "pre_harvest_interval_days": 14,
+          "safety_class": "III (Slightly Hazardous)"
+        },
+        {
+          "product_name": "Tilt 250 EC",
+          "active_ingredient": "Propiconazole 25%",
+          "formulation": "EC (Emulsifiable Concentrate)",
+          "max_dose_per_acre": 200,
+          "dose_unit": "ml",
+          "dilution": "per 100 liters water",
+          "dose_display_ur": "200 ملی لیٹر فی 100 لیٹر پانی فی ایکڑ",
+          "spray_timing_ur": "زنگ کی پہلی علامات نظر آتے ہی اسپرے کریں",
+          "pre_harvest_interval_days": 30,
+          "safety_class": "II (Moderately Hazardous)"
+        }
+      ],
+      "organic_remedies": [
+        {
+          "remedy_name": "Neem Oil Emulsion",
+          "remedy_name_ur": "نیم کا تیل اور صابن کا محلول",
+          "ingredients": "Pure neem oil 5ml + liquid soap 2g per liter water",
+          "instructions_ur": "5 ملی لیٹر نیم کا خالص تیل اور 2 گرام مائع صابن فی لیٹر پانی ملا کر متاثرہ پتوں پر اسپرے کریں۔ ہر 7 دن بعد دہرائیں۔",
+          "efficacy_note": "Preventative and early-stage suppression; not curative for heavy infection"
+        },
+        {
+          "remedy_name": "Baking Soda Spray",
+          "remedy_name_ur": "کھانے کا سوڈا سپرے",
+          "ingredients": "Baking soda 10g + liquid soap 5ml per liter water",
+          "instructions_ur": "10 گرام کھانے کا سوڈا اور 5 ملی لیٹر مائع صابن فی لیٹر پانی ملا کر ہفتہ وار اسپرے کریں۔",
+          "efficacy_note": "Creates alkaline environment unfavorable for rust spore germination"
+        }
+      ]
+    },
+    "wheat_stripe_rust": {
+      "disease_name": "Wheat Stripe Rust (Yellow Rust)",
+      "disease_name_ur": "گندم: زرد زنگاری",
+      "pathogen": "Puccinia striiformis f. sp. tritici",
+      "approved_chemicals": [
+        {
+          "product_name": "Nativo 75 WG",
+          "active_ingredient": "Tebuconazole 50% + Trifloxystrobin 25%",
+          "formulation": "WG (Water Dispersible Granule)",
+          "max_dose_per_acre": 65,
+          "dose_unit": "grams",
+          "dilution": "per 100 liters water",
+          "dose_display_ur": "65 گرام فی 100 لیٹر پانی فی ایکڑ",
+          "spray_timing_ur": "زرد زنگ کی پہلی علامات ظاہر ہوتے ہی فوری اسپرے کریں",
+          "pre_harvest_interval_days": 21,
+          "safety_class": "III (Slightly Hazardous)"
+        },
+        {
+          "product_name": "Folicur 250 EW",
+          "active_ingredient": "Tebuconazole 25%",
+          "formulation": "EW (Emulsion in Water)",
+          "max_dose_per_acre": 200,
+          "dose_unit": "ml",
+          "dilution": "per 100 liters water",
+          "dose_display_ur": "200 ملی لیٹر فی 100 لیٹر پانی فی ایکڑ",
+          "spray_timing_ur": "بیماری ظاہر ہونے پر 15 دن کے وقفے سے دو مرتبہ اسپرے کریں",
+          "pre_harvest_interval_days": 21,
+          "safety_class": "III (Slightly Hazardous)"
+        }
+      ],
+      "organic_remedies": [
+        {
+          "remedy_name": "Neem Oil Emulsion",
+          "remedy_name_ur": "نیم کا تیل اور صابن کا محلول",
+          "ingredients": "Pure neem oil 5ml + liquid soap 2g per liter water",
+          "instructions_ur": "5 ملی لیٹر نیم کا خالص تیل اور 2 گرام مائع صابن فی لیٹر پانی ملا کر ہفتہ وار اسپرے کریں۔",
+          "efficacy_note": "Preventative measure; use alongside resistant wheat varieties"
+        }
+      ]
+    },
+    "cotton_leaf_curl_virus": {
+      "disease_name": "Cotton Leaf Curl Virus (CLCuV)",
+      "disease_name_ur": "کپاس: مڑوریا وائرس (سفید مکھی)",
+      "pathogen": "Cotton Leaf Curl Virus (Begomovirus) via Whitefly (Bemisia tabaci)",
+      "approved_chemicals": [
+        {
+          "product_name": "Imidacloprid 200 SL (Confidor)",
+          "active_ingredient": "Imidacloprid 20%",
+          "formulation": "SL (Soluble Concentrate)",
+          "max_dose_per_acre": 250,
+          "dose_unit": "ml",
+          "dilution": "per 100 liters water",
+          "dose_display_ur": "250 ملی لیٹر فی 100 لیٹر پانی فی ایکڑ",
+          "spray_timing_ur": "سفید مکھی کی تعداد 5 فی پتا ہونے پر فوری اسپرے کریں",
+          "pre_harvest_interval_days": 14,
+          "safety_class": "II (Moderately Hazardous)"
+        },
+        {
+          "product_name": "Acetamiprid 20 SP (Mospilan)",
+          "active_ingredient": "Acetamiprid 20%",
+          "formulation": "SP (Soluble Powder)",
+          "max_dose_per_acre": 100,
+          "dose_unit": "grams",
+          "dilution": "per 100 liters water",
+          "dose_display_ur": "100 گرام فی 100 لیٹر پانی فی ایکڑ",
+          "spray_timing_ur": "سفید مکھی نظر آتے ہی صبح سویرے اسپرے کریں",
+          "pre_harvest_interval_days": 7,
+          "safety_class": "III (Slightly Hazardous)"
+        },
+        {
+          "product_name": "Diafenthiuron 50 WP (Polo)",
+          "active_ingredient": "Diafenthiuron 50%",
+          "formulation": "WP (Wettable Powder)",
+          "max_dose_per_acre": 200,
+          "dose_unit": "grams",
+          "dilution": "per 100 liters water",
+          "dose_display_ur": "200 گرام فی 100 لیٹر پانی فی ایکڑ",
+          "spray_timing_ur": "سفید مکھی کی شدید آبادی پر شام کے وقت اسپرے کریں",
+          "pre_harvest_interval_days": 14,
+          "safety_class": "III (Slightly Hazardous)"
+        }
+      ],
+      "organic_remedies": [
+        {
+          "remedy_name": "Yellow Sticky Traps + Neem Spray",
+          "remedy_name_ur": "زرد چپکنے والے جال اور نیم کا اسپرے",
+          "ingredients": "Yellow plastic sheets with adhesive + Neem oil 5ml/liter",
+          "instructions_ur": "زرد چپکنے والے جال ہر 10 فٹ پر لگائیں اور نیم کا تیل 5 ملی لیٹر فی لیٹر پانی ملا کر ہفتہ وار اسپرے کریں۔",
+          "efficacy_note": "Effective for whitefly population reduction; must be combined with resistant cotton varieties (e.g., FH-142)"
+        }
+      ]
+    },
+    "rice_blast": {
+      "disease_name": "Rice Blast",
+      "disease_name_ur": "دھان کا بلاسٹ / جھلساؤ",
+      "pathogen": "Magnaporthe oryzae (Pyricularia oryzae)",
+      "approved_chemicals": [
+        {
+          "product_name": "Beam 75 WP",
+          "active_ingredient": "Tricyclazole 75%",
+          "formulation": "WP (Wettable Powder)",
+          "max_dose_per_acre": 120,
+          "dose_unit": "grams",
+          "dilution": "per 100 liters water",
+          "dose_display_ur": "120 گرام فی 100 لیٹر پانی فی ایکڑ",
+          "spray_timing_ur": "بلاسٹ کی پہلی علامات ظاہر ہوتے ہی فوری اسپرے کریں",
+          "pre_harvest_interval_days": 21,
+          "safety_class": "III (Slightly Hazardous)"
+        },
+        {
+          "product_name": "Nativo 75 WG",
+          "active_ingredient": "Tebuconazole 50% + Trifloxystrobin 25%",
+          "formulation": "WG (Water Dispersible Granule)",
+          "max_dose_per_acre": 65,
+          "dose_unit": "grams",
+          "dilution": "per 100 liters water",
+          "dose_display_ur": "65 گرام فی 100 لیٹر پانی فی ایکڑ",
+          "spray_timing_ur": "بلاسٹ کے خلاف حفاظتی اسپرے کریں",
+          "pre_harvest_interval_days": 21,
+          "safety_class": "III (Slightly Hazardous)"
+        },
+        {
+          "product_name": "Amistar Top 325 SC",
+          "active_ingredient": "Azoxystrobin 20% + Difenoconazole 12.5%",
+          "formulation": "SC (Suspension Concentrate)",
+          "max_dose_per_acre": 200,
+          "dose_unit": "ml",
+          "dilution": "per 100 liters water",
+          "dose_display_ur": "200 ملی لیٹر فی 100 لیٹر پانی فی ایکڑ",
+          "spray_timing_ur": "بلاسٹ یا بھورے دھبے ظاہر ہونے پر اسپرے کریں",
+          "pre_harvest_interval_days": 14,
+          "safety_class": "III (Slightly Hazardous)"
+        }
+      ],
+      "organic_remedies": [
+        {
+          "remedy_name": "Trichoderma Seed Treatment",
+          "remedy_name_ur": "ٹرائیکوڈرما سے بیج کا علاج",
+          "ingredients": "Trichoderma viride 4g per kg of seed",
+          "instructions_ur": "بیج بونے سے پہلے 4 گرام ٹرائیکوڈرما فی کلو بیج ملا کر سایے میں خشک کریں۔ یہ فنگس بلاسٹ کے خلاف حیاتیاتی ڈھال فراہم کرتی ہے۔",
+          "efficacy_note": "Biocontrol agent; effective as preventative seed treatment before transplanting"
+        },
+        {
+          "remedy_name": "Silicon Foliar Spray",
+          "remedy_name_ur": "سلیکون کا پتوں پر اسپرے",
+          "ingredients": "Potassium silicate 2ml per liter water",
+          "instructions_ur": "2 ملی لیٹر پوٹاشیم سلیکیٹ فی لیٹر پانی ملا کر ہر 10 دن بعد اسپرے کریں۔ سلیکون پتوں کی بیرونی تہہ مضبوط کرتا ہے۔",
+          "efficacy_note": "Strengthens cell walls, reducing pathogen penetration"
+        }
+      ]
+    }
+  }
+}
