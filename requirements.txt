@@ -15,11 +15,12 @@ Pillow==10.4.0
 chromadb==0.5.5
 sentence-transformers==3.0.1
 
-# LLM Integration
-google-genai==1.5.0
+# LLM & Environment Integration
+google-genai>=2.22.0
+python-dotenv>=1.0.1
 
 # Text-to-Speech
-edge-tts==6.1.12
+edge-tts>=7.2.8
 
 # Web UI
 streamlit==1.37.1

@@ -18,7 +18,7 @@ AgriDoc-PK is an AI-powered mobile web application that provides Pakistani farme
   - [Step 3 — Activate the Virtual Environment](#step-3--activate-the-virtual-environment)
   - [Step 4 — Install Dependencies](#step-4--install-dependencies)
   - [Step 5 — Build the Knowledge Base Index](#step-5--build-the-knowledge-base-index-one-time)
-  - [Step 6 — Set Your Gemini API Key (Optional)](#step-6--set-your-gemini-api-key-optional)
+  - [Step 6 — Configure Your Gemini API Key (Optional)](#step-6--configure-your-gemini-api-key-optional-but-recommended)
   - [Step 7 — Launch the App](#step-7--launch-the-app)
 - [Dataset Download](#-dataset-download)
 - [Model Training Pipeline](#-model-training-pipeline)
@@ -125,24 +125,83 @@ python knowledge_base/build_index.py
 
 This creates the ChromaDB vector index from PARC agronomic bulletins in `data_store/chroma_db/`. You only need to run this once.
 
-### Step 6 — Set Your Gemini API Key (Optional)
+### Step 6 — Configure Your Gemini API Key (Optional but Recommended)
+
+For live conversational AI advisory, Urdu interactive follow-up Q&A, and real-time dosage calculations, AgriDoc-PK integrates with **Google Gemini Flash**.
+
+#### 1. Get a Free API Key
+1. Visit [Google AI Studio](https://aistudio.google.com/apikey).
+2. Sign in with your Google account.
+3. Click **"Create API key"** and copy your generated key.
+
+---
+
+#### 2. Configure the Key (Choose Any Method)
+
+##### Method A: Using a `.env` File (Recommended — Persistent)
+The application automatically loads variables from a `.env` file in the root folder via `python-dotenv` (this file is already excluded in `.gitignore` so your key stays private).
+
+**Create `.env` using PowerShell:**
+```powershell
+"GOOGLE_API_KEY=your_actual_api_key_here" | Out-File -Encoding utf8 .env
+```
+
+**Create `.env` using Bash / macOS:**
+```bash
+echo 'GOOGLE_API_KEY="your_actual_api_key_here"' > .env
+```
+
+*Or manually create a file named `.env` in the project root directory:*
+```env
+GOOGLE_API_KEY=your_actual_api_key_here
+```
+
+##### Method B: Using Terminal Environment Variable (Session-Only)
 
 **Windows (PowerShell):**
 ```powershell
-$env:GOOGLE_API_KEY = "your_api_key_here"
+$env:GOOGLE_API_KEY = "your_actual_api_key_here"
 ```
 
-**Windows (CMD):**
+**Windows (Command Prompt):**
 ```cmd
-set GOOGLE_API_KEY=your_api_key_here
+set GOOGLE_API_KEY=your_actual_api_key_here
 ```
 
 **Linux / macOS:**
 ```bash
-export GOOGLE_API_KEY="your_api_key_here"
+export GOOGLE_API_KEY="your_actual_api_key_here"
 ```
 
-> **Note:** Without this key, the app uses static PARC-verified fallback recommendations. All core features (image diagnosis, severity analysis, Urdu advisory) work without it.
+##### Method C: Using Streamlit Secrets
+Add your key inside `.streamlit/secrets.toml`:
+```toml
+GOOGLE_API_KEY = "your_actual_api_key_here"
+```
+
+---
+
+#### 3. Verify Your API Key Configuration (Optional)
+Run this quick check in your terminal to ensure Python detects your key:
+
+**Windows (PowerShell):**
+```powershell
+python -c "import os; from dotenv import load_dotenv; load_dotenv(); print('✅ GOOGLE_API_KEY detected!' if os.getenv('GOOGLE_API_KEY') else '❌ GOOGLE_API_KEY not found.')"
+```
+
+**Linux / macOS:**
+```bash
+python -c "import os; from dotenv import load_dotenv; load_dotenv(); print('✅ GOOGLE_API_KEY detected!' if os.getenv('GOOGLE_API_KEY') else '❌ GOOGLE_API_KEY not found.')"
+```
+
+---
+
+#### 💡 Behavior Modes
+
+| Mode | Trigger | Capabilities |
+|------|---------|-------------|
+| 🟢 **Live AI Mode** | `GOOGLE_API_KEY` is configured | Dynamic Gemini Flash advisory, context-aware Urdu follow-up chat, smart dosage optimization. |
+| 🟡 **PARC Offline Mode** | `GOOGLE_API_KEY` is missing / empty | 100% offline fallback using static, PARC-verified agronomic bulletins. Leaf quality checks, disease diagnosis, and severity analysis remain fully functional. |
 
 ### Step 7 — Launch the App
 

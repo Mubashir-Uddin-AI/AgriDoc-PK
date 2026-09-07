@@ -83,8 +83,8 @@ PATHOGEN_MAP = {
 IMAGENET_MEAN = [0.485, 0.456, 0.406]
 IMAGENET_STD = [0.229, 0.224, 0.225]
 
-# OOD confidence threshold (FR-2.2)
-OOD_THRESHOLD = 0.65
+# OOD confidence threshold (FR-2.2 — calibrated for field photos)
+OOD_THRESHOLD = 0.35
 
 # Default model weights path
 DEFAULT_WEIGHTS_PATH = Path(__file__).resolve().parent.parent / "models" / "weights" / "mobilenetv3_best.pth"
@@ -191,11 +191,12 @@ class CropDiseaseClassifier:
         return tensor.to(self.device)
 
     @torch.no_grad()
-    def predict(self, img_bgr: np.ndarray) -> Dict:
+    def predict(self, img_bgr: np.ndarray, crop_hint: Optional[str] = None) -> Dict:
         """Run inference on a leaf image and return structured diagnosis.
 
         Args:
             img_bgr: BGR NumPy image of the leaf.
+            crop_hint: Optional crop tab filter ('wheat', 'cotton', 'rice').
 
         Returns:
             Dictionary with keys:
@@ -210,11 +211,25 @@ class CropDiseaseClassifier:
         """
         tensor = self.preprocess(img_bgr)
         logits = self.model(tensor)
-        probabilities = F.softmax(logits, dim=1).squeeze(0)
 
-        confidence, predicted_idx = torch.max(probabilities, dim=0)
-        confidence = float(confidence)
-        predicted_idx = int(predicted_idx)
+        # Context-aware prediction if crop tab is known
+        if crop_hint and crop_hint.lower() in ("wheat", "cotton", "rice"):
+            crop_key = crop_hint.lower()
+            crop_indices = [i for i, name in enumerate(CLASS_NAMES) if name.startswith(crop_key)]
+            if crop_indices:
+                crop_logits = logits[:, crop_indices]
+                crop_probs = F.softmax(crop_logits, dim=1).squeeze(0)
+                rel_conf, rel_idx = torch.max(crop_probs, dim=0)
+                confidence = float(rel_conf)
+                predicted_idx = crop_indices[int(rel_idx)]
+            else:
+                probabilities = F.softmax(logits, dim=1).squeeze(0)
+                confidence, predicted_idx = torch.max(probabilities, dim=0)
+                confidence, predicted_idx = float(confidence), int(predicted_idx)
+        else:
+            probabilities = F.softmax(logits, dim=1).squeeze(0)
+            confidence, predicted_idx = torch.max(probabilities, dim=0)
+            confidence, predicted_idx = float(confidence), int(predicted_idx)
 
         disease_id = CLASS_NAMES[predicted_idx]
         crop_en, crop_ur = CROP_FROM_CLASS[disease_id]

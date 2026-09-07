@@ -11,8 +11,12 @@ Implements FR-4.1 and FR-4.2 from the AgriDoc-PK PRD:
 from __future__ import annotations
 
 import logging
+import os
 from pathlib import Path
 from typing import Any, Dict, List, Optional
+
+# Disable ChromaDB telemetry before importing to avoid capture() mismatch logs
+os.environ["ANONYMIZED_TELEMETRY"] = "False"
 
 import chromadb
 from chromadb.config import Settings

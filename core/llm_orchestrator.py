@@ -14,8 +14,12 @@ from __future__ import annotations
 import json
 import logging
 import os
+import re
 import time
 from typing import Any, Dict, List, Optional
+
+from dotenv import load_dotenv
+load_dotenv()
 
 from google import genai
 from google.genai import types
@@ -27,12 +31,26 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 # LLM Configuration
 # ---------------------------------------------------------------------------
-DEFAULT_MODEL = "gemini-3.7-flash"
-MAX_OUTPUT_TOKENS = 1024
+DEFAULT_MODEL = "gemini-3.5-flash"
+FALLBACK_MODELS = ["gemini-3.5-flash", "gemini-3.5-flash-lite", "gemini-3.7-flash"]
+MAX_OUTPUT_TOKENS = 2048  # Increased to prevent JSON truncation in Urdu
 TEMPERATURE = 0.2  # Low temperature for factual, grounded output
 
+
+def _clean_json_text(text: str) -> str:
+    """Strip markdown code blocks or stray formatting from model response."""
+    text = text.strip()
+    if text.startswith("```json"):
+        text = text[7:]
+    elif text.startswith("```"):
+        text = text[3:]
+    if text.endswith("```"):
+        text = text[:-3]
+    return text.strip()
+
+
 # ---------------------------------------------------------------------------
-# System prompt — strict anti-hallucination boundary
+# System prompts — strict anti-hallucination boundaries
 # ---------------------------------------------------------------------------
 SYSTEM_PROMPT = """You are AgriDoc-PK, a specialized agricultural pathology advisor for Pakistani farmers.
 
@@ -62,6 +80,21 @@ OUTPUT FORMAT: You MUST respond in valid JSON with these exact keys:
   "cultural_practices_ur": "Prevention and cultural control advice in Urdu",
   "voice_script_ur": "Short Urdu voice script under 35 words for TTS playback",
   "sources_cited": ["List of PARC document names referenced"]
+}"""
+
+CHAT_SYSTEM_PROMPT = """You are AgriDoc-PK, a helpful agricultural advisor answering follow-up questions from Pakistani farmers.
+
+STRICT RULES:
+1. Answer farmer questions clearly in simple, conversational Urdu.
+2. Keep advice practical, safe, and aligned with standard agricultural and PARC guidelines.
+3. Keep the voice script under 25 words in Urdu for clear phone speaker playback.
+4. If the question is not about farming or crop health, politely redirect the farmer in Urdu.
+
+OUTPUT FORMAT: You MUST respond in valid JSON with these exact keys:
+{
+  "reply_text_ur": "Complete helpful response in simple Urdu",
+  "voice_script_ur": "Short Urdu summary under 25 words for voice reading",
+  "sources_cited": ["PARC Guidelines"]
 }"""
 
 
@@ -198,50 +231,47 @@ def generate_advisory(
     # Build the prompt
     user_prompt = _build_user_prompt(context)
 
+    # Models to attempt in order
+    models_to_try = [model_name] + [m for m in FALLBACK_MODELS if m != model_name]
+
+    advisory = None
     try:
-        # Initialize Gemini client
         client = genai.Client(api_key=resolved_key)
 
-        # Retry with exponential backoff for rate limits (429/503)
-        max_retries = 3
-        advisory = None
-        for attempt in range(max_retries):
-            try:
-                response = client.models.generate_content(
-                    model=model_name,
-                    contents=user_prompt,
-                    config=types.GenerateContentConfig(
-                        system_instruction=SYSTEM_PROMPT,
-                        temperature=TEMPERATURE,
-                        max_output_tokens=MAX_OUTPUT_TOKENS,
-                        response_mime_type="application/json",
-                    ),
-                )
+        for current_model in models_to_try:
+            for attempt in range(2):  # up to 2 attempts per model
+                try:
+                    response = client.models.generate_content(
+                        model=current_model,
+                        contents=user_prompt,
+                        config=types.GenerateContentConfig(
+                            system_instruction=SYSTEM_PROMPT,
+                            temperature=TEMPERATURE,
+                            max_output_tokens=MAX_OUTPUT_TOKENS,
+                            response_mime_type="application/json",
+                        ),
+                    )
 
-                # Parse JSON response
-                response_text = response.text.strip()
-                advisory = json.loads(response_text)
-                logger.info("LLM advisory generated successfully for disease=%s", disease_id)
-                break  # success
+                    clean_text = _clean_json_text(response.text)
+                    advisory = json.loads(clean_text)
+                    logger.info("LLM advisory generated via %s for %s", current_model, disease_id)
+                    break  # success with this model
 
-            except json.JSONDecodeError as e:
-                logger.error("LLM returned invalid JSON (attempt %d): %s", attempt + 1, e)
-                if attempt < max_retries - 1:
-                    time.sleep(2 ** (attempt + 1))
+                except json.JSONDecodeError as e:
+                    logger.warning("Invalid JSON from %s (attempt %d): %s", current_model, attempt + 1, e)
+                    time.sleep(1)
                     continue
-                return _get_static_fallback(disease_id)
-            except Exception as e:
-                err_str = str(e)
-                if ("429" in err_str or "503" in err_str or "UNAVAILABLE" in err_str or "RESOURCE_EXHAUSTED" in err_str):
-                    wait = 2 ** (attempt + 1)
-                    logger.warning("Rate limited (attempt %d/%d). Waiting %ds...", attempt + 1, max_retries, wait)
-                    if attempt < max_retries - 1:
-                        time.sleep(wait)
-                        continue
-                logger.error("LLM API call failed: %s. Using static fallback.", e)
-                return _get_static_fallback(disease_id)
+                except Exception as e:
+                    err_str = str(e)
+                    logger.warning("Model %s failed (attempt %d): %s", current_model, attempt + 1, err_str[:120])
+                    time.sleep(1)
+                    continue
+
+            if advisory is not None:
+                break
 
         if advisory is None:
+            logger.warning("All models failed for advisory. Using static fallback.")
             return _get_static_fallback(disease_id)
 
     except Exception as e:
@@ -293,54 +323,65 @@ def generate_chat_response(
     severity = session_context.get("severity_pct", 0)
     prior_advice = session_context.get("prior_advisory_summary", "")
 
-    chat_prompt = f"""ONGOING DIAGNOSTIC SESSION:
+    chat_prompt = f"""DIAGNOSTIC CONTEXT:
 - Disease: {disease_id}
 - Severity: {severity}%
-- Prior Advice Given: {prior_advice}
+- Prior Advice: {prior_advice}
 
-FARMER'S FOLLOW-UP QUESTION: {query}
+FARMER QUESTION:
+{query}
 
-Respond in simple Urdu. Keep the answer concise and grounded in PARC guidelines.
-Also provide a short voice_script_ur (under 25 words) for audio playback.
-
-Respond in JSON:
+Respond in simple Urdu. Output JSON:
 {{"reply_text_ur": "...", "voice_script_ur": "...", "sources_cited": ["..."]}}"""
+
+    models_to_try = [model_name] + [m for m in FALLBACK_MODELS if m != model_name]
 
     try:
         client = genai.Client(api_key=resolved_key)
 
-        max_retries = 3
-        for attempt in range(max_retries):
-            try:
-                response = client.models.generate_content(
-                    model=model_name,
-                    contents=chat_prompt,
-                    config=types.GenerateContentConfig(
-                        system_instruction=SYSTEM_PROMPT,
-                        temperature=0.3,
-                        max_output_tokens=512,
-                        response_mime_type="application/json",
-                    ),
-                )
+        for current_model in models_to_try:
+            for attempt in range(2):
+                try:
+                    response = client.models.generate_content(
+                        model=current_model,
+                        contents=chat_prompt,
+                        config=types.GenerateContentConfig(
+                            system_instruction=CHAT_SYSTEM_PROMPT,
+                            temperature=0.3,
+                            max_output_tokens=2048,
+                            response_mime_type="application/json",
+                        ),
+                    )
 
-                result = json.loads(response.text.strip())
-                logger.info("Chat response generated for query: %s", query[:60])
-                return result
+                    clean_text = _clean_json_text(response.text)
+                    result = json.loads(clean_text)
 
-            except (json.JSONDecodeError, Exception) as e:
-                err_str = str(e)
-                if ("429" in err_str or "503" in err_str or "UNAVAILABLE" in err_str
-                        or "RESOURCE_EXHAUSTED" in err_str or isinstance(e, json.JSONDecodeError)):
-                    wait = 2 ** (attempt + 1)
-                    logger.warning("Chat rate limited (attempt %d/%d). Waiting %ds...", attempt + 1, max_retries, wait)
-                    if attempt < max_retries - 1:
-                        time.sleep(wait)
-                        continue
-                logger.error("Chat LLM call failed: %s", e)
-                break
+                    # Normalize keys in case model used alternate names
+                    reply = (
+                        result.get("reply_text_ur")
+                        or result.get("disease_explanation_ur")
+                        or result.get("answer")
+                        or result.get("response")
+                        or ""
+                    )
+                    voice = result.get("voice_script_ur") or reply[:150]
+                    sources = result.get("sources_cited") or ["PARC Guidelines"]
+
+                    if reply:
+                        logger.info("Chat response generated via %s for query: %s", current_model, query[:40])
+                        return {
+                            "reply_text_ur": reply,
+                            "voice_script_ur": voice,
+                            "sources_cited": sources,
+                        }
+
+                except Exception as e:
+                    logger.warning("Chat call to %s failed (attempt %d): %s", current_model, attempt + 1, str(e)[:120])
+                    time.sleep(1)
+                    continue
 
     except Exception as e:
-        logger.error("Chat LLM call failed: %s", e)
+        logger.error("Chat LLM client failed: %s", e)
 
     return {
         "reply_text_ur": "معذرت، جواب دینے میں مسئلہ ہوا۔ براہ کرم دوبارہ کوشش کریں۔",
