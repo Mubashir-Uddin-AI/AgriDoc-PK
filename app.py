@@ -966,8 +966,18 @@ def main():
                 st.image(img_rgb, caption="📸 اپ لوڈ شدہ تصویر / Uploaded Image",
                         use_column_width=True)
 
-                # Run diagnostic pipeline
-                results = process_image(img_bgr, crop_key)
+                # Cache results to avoid duplicate LLM calls on Streamlit reruns
+                import hashlib
+                img_hash = hashlib.md5(img_bytes[:2048]).hexdigest()
+                cache_key = f"results_{crop_key}_{img_hash}"
+
+                if cache_key in st.session_state:
+                    results = st.session_state[cache_key]
+                else:
+                    # Run diagnostic pipeline (only on first run for this image)
+                    results = process_image(img_bgr, crop_key)
+                    if results:
+                        st.session_state[cache_key] = results
 
                 if results:
                     diagnosis = results["diagnosis"]

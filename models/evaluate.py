@@ -47,7 +47,7 @@ def evaluate(args: argparse.Namespace):
     model = classifier.model
 
     # Load test dataset
-    test_dir = os.path.join(args.data_dir, "test")
+    test_dir = os.path.join(args.data_dir, "val")
     test_dataset = CropDiseaseDataset(test_dir, transform=get_val_transforms())
 
     if len(test_dataset) == 0:

@@ -22,6 +22,10 @@ import torch
 import torch.nn as nn
 from torch.quantization import quantize_dynamic
 
+# Import ONNX Runtime Quantization Utilities
+from onnxruntime.quantization import quantize_dynamic as onnx_quantize_dynamic
+from onnxruntime.quantization import QuantType
+
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 from core.classifier import CLASS_NAMES, initialize_model
@@ -110,7 +114,7 @@ def main():
     onnx_fp32_path = output_dir / "mobilenetv3_fp32.onnx"
     export_onnx(model, str(onnx_fp32_path))
 
-    # Step 2: Dynamic quantization
+    # Step 2: Dynamic quantization (PyTorch version)
     quantized_model = quantize_model(model)
 
     # Step 3: Save quantized PyTorch model
@@ -120,9 +124,15 @@ def main():
     logger.info("Quantized PyTorch: %.2f MB (%.1f%% reduction)",
                 quantized_size, (1 - quantized_size / original_size) * 100)
 
-    # Step 4: Export quantized ONNX
+    # Step 4: Quantize the ONNX model using ONNX Runtime
     onnx_quant_path = output_dir / "mobilenetv3_quantized.onnx"
-    export_onnx(quantized_model, str(onnx_quant_path))
+    logger.info("Applying ONNX Runtime dynamic quantization...")
+    onnx_quantize_dynamic(
+        model_input=str(onnx_fp32_path),
+        model_output=str(onnx_quant_path),
+        weight_type=QuantType.QUInt8
+    )
+    logger.info("Quantized ONNX model exported: %s", onnx_quant_path)
 
     # Summary
     print("\n" + "=" * 50)

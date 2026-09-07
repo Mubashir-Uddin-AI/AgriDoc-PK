@@ -8,7 +8,7 @@ onnxruntime==1.18.1
 
 # Image Processing & Augmentation
 opencv-python-headless==4.10.0.84
-albumentations==1.4.11
+albumentations==2.0.8
 Pillow==10.4.0
 
 # Vector Database & RAG

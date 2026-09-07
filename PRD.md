@@ -10,7 +10,7 @@
 | **Target Hackathon** | Bano Qabil AI Hackathon (in partnership with Alibaba Cloud & Alkhidmat Foundation) |
 | **Domain Tracks** | Smart Agriculture / Urdu & Regional AI Technology / Generative AI & Edge Systems |
 | **Primary Dataset** | `mubashiruddin01/agridoc-pk-dataset` |
-| **Author / Lead** | Mubashir Uddin (AI/ML Engineer & Systems Architect) |
+| **Team Members** | Mubashir Uddin (AI/ML Engineer & Systems Architect), Saad Mustafa (Workflow Manager), Dheeraj Khatri (Data Engineer) |
 | **Document Version** | `v2.0.0-PROD` (Updated: Grounded LLM / Hybrid RAG Architecture) |
 | **Status** | Approved for Execution / Hackathon Ready |
 | **Classification** | Technical Product Specification & Engineering Blueprint |

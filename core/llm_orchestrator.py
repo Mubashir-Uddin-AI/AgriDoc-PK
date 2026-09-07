@@ -14,6 +14,7 @@ from __future__ import annotations
 import json
 import logging
 import os
+import time
 from typing import Any, Dict, List, Optional
 
 from google import genai
@@ -26,7 +27,7 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 # LLM Configuration
 # ---------------------------------------------------------------------------
-DEFAULT_MODEL = "gemini-2.0-flash"
+DEFAULT_MODEL = "gemini-3.7-flash"
 MAX_OUTPUT_TOKENS = 1024
 TEMPERATURE = 0.2  # Low temperature for factual, grounded output
 
@@ -201,27 +202,48 @@ def generate_advisory(
         # Initialize Gemini client
         client = genai.Client(api_key=resolved_key)
 
-        # Generate with structured output
-        response = client.models.generate_content(
-            model=model_name,
-            contents=user_prompt,
-            config=types.GenerateContentConfig(
-                system_instruction=SYSTEM_PROMPT,
-                temperature=TEMPERATURE,
-                max_output_tokens=MAX_OUTPUT_TOKENS,
-                response_mime_type="application/json",
-            ),
-        )
+        # Retry with exponential backoff for rate limits (429/503)
+        max_retries = 3
+        advisory = None
+        for attempt in range(max_retries):
+            try:
+                response = client.models.generate_content(
+                    model=model_name,
+                    contents=user_prompt,
+                    config=types.GenerateContentConfig(
+                        system_instruction=SYSTEM_PROMPT,
+                        temperature=TEMPERATURE,
+                        max_output_tokens=MAX_OUTPUT_TOKENS,
+                        response_mime_type="application/json",
+                    ),
+                )
 
-        # Parse JSON response
-        response_text = response.text.strip()
-        advisory = json.loads(response_text)
+                # Parse JSON response
+                response_text = response.text.strip()
+                advisory = json.loads(response_text)
+                logger.info("LLM advisory generated successfully for disease=%s", disease_id)
+                break  # success
 
-        logger.info("LLM advisory generated successfully for disease=%s", disease_id)
+            except json.JSONDecodeError as e:
+                logger.error("LLM returned invalid JSON (attempt %d): %s", attempt + 1, e)
+                if attempt < max_retries - 1:
+                    time.sleep(2 ** (attempt + 1))
+                    continue
+                return _get_static_fallback(disease_id)
+            except Exception as e:
+                err_str = str(e)
+                if ("429" in err_str or "503" in err_str or "UNAVAILABLE" in err_str or "RESOURCE_EXHAUSTED" in err_str):
+                    wait = 2 ** (attempt + 1)
+                    logger.warning("Rate limited (attempt %d/%d). Waiting %ds...", attempt + 1, max_retries, wait)
+                    if attempt < max_retries - 1:
+                        time.sleep(wait)
+                        continue
+                logger.error("LLM API call failed: %s. Using static fallback.", e)
+                return _get_static_fallback(disease_id)
 
-    except json.JSONDecodeError as e:
-        logger.error("LLM returned invalid JSON: %s. Using static fallback.", e)
-        return _get_static_fallback(disease_id)
+        if advisory is None:
+            return _get_static_fallback(disease_id)
+
     except Exception as e:
         logger.error("LLM API call failed: %s. Using static fallback.", e)
         return _get_static_fallback(disease_id)
@@ -287,25 +309,41 @@ Respond in JSON:
     try:
         client = genai.Client(api_key=resolved_key)
 
-        response = client.models.generate_content(
-            model=model_name,
-            contents=chat_prompt,
-            config=types.GenerateContentConfig(
-                system_instruction=SYSTEM_PROMPT,
-                temperature=0.3,
-                max_output_tokens=512,
-                response_mime_type="application/json",
-            ),
-        )
+        max_retries = 3
+        for attempt in range(max_retries):
+            try:
+                response = client.models.generate_content(
+                    model=model_name,
+                    contents=chat_prompt,
+                    config=types.GenerateContentConfig(
+                        system_instruction=SYSTEM_PROMPT,
+                        temperature=0.3,
+                        max_output_tokens=512,
+                        response_mime_type="application/json",
+                    ),
+                )
 
-        result = json.loads(response.text.strip())
-        logger.info("Chat response generated for query: %s", query[:60])
-        return result
+                result = json.loads(response.text.strip())
+                logger.info("Chat response generated for query: %s", query[:60])
+                return result
+
+            except (json.JSONDecodeError, Exception) as e:
+                err_str = str(e)
+                if ("429" in err_str or "503" in err_str or "UNAVAILABLE" in err_str
+                        or "RESOURCE_EXHAUSTED" in err_str or isinstance(e, json.JSONDecodeError)):
+                    wait = 2 ** (attempt + 1)
+                    logger.warning("Chat rate limited (attempt %d/%d). Waiting %ds...", attempt + 1, max_retries, wait)
+                    if attempt < max_retries - 1:
+                        time.sleep(wait)
+                        continue
+                logger.error("Chat LLM call failed: %s", e)
+                break
 
     except Exception as e:
         logger.error("Chat LLM call failed: %s", e)
-        return {
-            "reply_text_ur": "معذرت، جواب دینے میں مسئلہ ہوا۔ براہ کرم دوبارہ کوشش کریں۔",
-            "voice_script_ur": "معذرت، جواب دستیاب نہیں ہے۔",
-            "sources_cited": [],
-        }
+
+    return {
+        "reply_text_ur": "معذرت، جواب دینے میں مسئلہ ہوا۔ براہ کرم دوبارہ کوشش کریں۔",
+        "voice_script_ur": "معذرت، جواب دستیاب نہیں ہے۔",
+        "sources_cited": [],
+    }
