@@ -166,7 +166,7 @@ def build_index(
     try:
         client.delete_collection(collection_name)
         logger.info("Deleted existing collection '%s'", collection_name)
-    except ValueError:
+    except Exception:
         pass
 
     collection = client.create_collection(

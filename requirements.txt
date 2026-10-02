@@ -1,19 +1,19 @@
 # AgriDoc-PK Production Dependencies
-# Frozen for reproducible builds
+# Compatible with Python 3.11+ (including 3.13)
 
 # Deep Learning & Vision
-torch==2.3.1
-torchvision==0.18.1
-onnxruntime==1.18.1
+torch
+torchvision
+onnxruntime
 
 # Image Processing & Augmentation
-opencv-python-headless==4.10.0.84
-albumentations==2.0.8
-Pillow==10.4.0
+opencv-python-headless>=4.10.0
+albumentations>=2.0.0
+Pillow>=11.0.0
 
 # Vector Database & RAG
-chromadb==0.5.5
-sentence-transformers==3.0.1
+chromadb>=0.5.5
+sentence-transformers>=3.0.1
 
 # LLM & Environment Integration
 google-genai>=2.22.0
@@ -23,11 +23,11 @@ python-dotenv>=1.0.1
 edge-tts>=7.2.8
 
 # Web UI
-streamlit==1.37.1
+streamlit>=1.37.1
 
 # ML Utilities
-scikit-learn==1.5.1
-numpy==1.26.4
+scikit-learn>=1.6.0
+numpy>=2.0.0
 
 # Testing
-pytest==8.3.2
+pytest>=8.3.2

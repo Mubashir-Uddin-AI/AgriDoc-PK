@@ -114,7 +114,7 @@ class RAGEngine:
         where_filter = None
         if disease_id:
             where_filter = {
-                "disease_tags": {"$eq": disease_id}
+                "disease_tags": {"$contains": disease_id}
             }
 
         try:

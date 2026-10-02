@@ -967,7 +967,7 @@ def main():
                 # Show uploaded image with styled container
                 img_rgb = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2RGB)
                 st.image(img_rgb, caption="📸 اپ لوڈ شدہ تصویر / Uploaded Image",
-                        use_column_width=True)
+                        use_container_width=True)
 
                 # Cache results to avoid duplicate LLM calls on Streamlit reruns
                 import hashlib

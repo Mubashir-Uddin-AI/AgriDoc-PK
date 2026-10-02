@@ -93,7 +93,7 @@ DEFAULT_WEIGHTS_PATH = Path(__file__).resolve().parent.parent / "models" / "weig
 MSG_OOD = "پتے کی بیماری کی تصدیق نہیں ہو سکی۔ براہ کرم صاف تصویر دوبارہ لیں۔"
 
 
-def initialize_model(num_classes: int = 10, pretrained: bool = True) -> nn.Module:
+def initialize_model(num_classes: int = 9, pretrained: bool = True) -> nn.Module:
     """Create a MobileNetV3-Small model with a custom classification head.
 
     Args:
