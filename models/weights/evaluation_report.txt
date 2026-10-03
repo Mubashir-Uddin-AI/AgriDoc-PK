@@ -1,0 +1,19 @@
+Overall Accuracy: 97.99%
+
+                         precision    recall  f1-score   support
+
+cotton_bacterial_blight     1.0000    1.0000    1.0000        50
+         cotton_healthy     0.9623    0.9808    0.9714        52
+ cotton_leaf_curl_virus     0.9884    0.9770    0.9827        87
+             rice_blast     1.0000    0.9606    0.9799       127
+        rice_brown_spot     0.9627    0.9923    0.9773       130
+           rice_healthy     0.9704    1.0000    0.9850       131
+          wheat_healthy     0.9848    0.9750    0.9799       200
+        wheat_leaf_rust     0.9879    0.9569    0.9721       255
+      wheat_stripe_rust     0.9701    0.9962    0.9830       261
+
+               accuracy                         0.9799      1293
+              macro avg     0.9807    0.9821    0.9812      1293
+           weighted avg     0.9802    0.9799    0.9799      1293
+
+OOD detections: 10/1293

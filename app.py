@@ -1006,8 +1006,9 @@ def main():
                     }
                     st.session_state["session_context"] = session_ctx
 
-                    # Follow-up chat
-                    render_chat(session_ctx)
+    # Follow-up chat (outside tab loop — st.chat_input can only appear once)
+    if "session_context" in st.session_state:
+        render_chat(st.session_state["session_context"])
 
     # Footer
     st.markdown("""
